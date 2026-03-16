@@ -129,7 +129,7 @@ def export_pdf():
         expr += ' ='
         
         pdf.set_font("Helvetica", '', 14)
-        pdf.cell(col_width, row_height, f'{i+1}. {expr}', border='LRT', align='C')
+        pdf.cell(col_width, row_height, f'{i+1}. {expr}', border='LRTB', align='C')
         
         if i % 2 == 1:
             pdf.ln()
