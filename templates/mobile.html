@@ -245,8 +245,13 @@
         function renderExpr(p) {
             let html = `<span>${p.numbers[0]}</span>`;
             p.operators.forEach((op, i) => {
-                const color = op === '+' ? 'text-green-600' : 'text-red-500';
-                html += `<span class="${color}">${op}</span><span>${p.numbers[i + 1]}</span>`;
+                let displayOp = op;
+                let color = 'text-gray-600';
+                if (op === '+') color = 'text-green-600';
+                else if (op === '-') color = 'text-red-500';
+                else if (op === '*') { displayOp = '×'; color = 'text-blue-600'; }
+                else if (op === '/') { displayOp = '÷'; color = 'text-blue-600'; }
+                html += `<span class="${color}">${displayOp}</span><span>${p.numbers[i + 1]}</span>`;
             });
             return html;
         }
