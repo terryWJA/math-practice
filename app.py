@@ -106,14 +106,14 @@ def export_pdf():
     # ===== 第一页：题目 =====
     pdf.add_page()
     pdf.set_font("Helvetica", 'B', 20)
-    pdf.cell(0, 15, '加减法算术练习', ln=True, align='C')
+    pdf.cell(0, 15, 'Math Practice - Addition & Subtraction', ln=True, align='C')
     pdf.ln(5)
     
     pdf.set_font("Helvetica", '', 12)
-    pdf.cell(0, 10, f'题目数量: {len(problems)} 道', ln=True)
+    pdf.cell(0, 10, f'Number of problems: {len(problems)}', ln=True)
     pdf.ln(10)
     
-    # 题目区域 - 更大更宽松的排版
+    # 题目区域
     x_start = 20
     col_width = 85
     row_height = 14
@@ -137,10 +137,10 @@ def export_pdf():
     # ===== 第二页：答案和答题区 =====
     pdf.add_page()
     pdf.set_font("Helvetica", 'B', 18)
-    pdf.cell(0, 15, '答案', ln=True, align='C')
+    pdf.cell(0, 15, 'Answer Key', ln=True, align='C')
     pdf.ln(10)
     
-    # 答案区域 - 宽松排版
+    # 答案区域
     x_start = 25
     pdf.set_font("Helvetica", '', 12)
     
@@ -154,7 +154,7 @@ def export_pdf():
     
     # 答题区域
     pdf.set_font("Helvetica", 'B', 18)
-    pdf.cell(0, 15, '答题区', ln=True, align='C')
+    pdf.cell(0, 15, 'Work Area', ln=True, align='C')
     pdf.ln(10)
     
     for i in range(len(problems)):
