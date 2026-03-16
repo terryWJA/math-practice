@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, make_response
 from fpdf import FPDF
 import random
 import re
+import io
 
 app = Flask(__name__)
 
@@ -101,16 +102,16 @@ def export_pdf():
     
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font('Arial', 'B', 16)
-    pdf.cell(0, 10, '加减法算术练习', ln=True, align='C')
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(0, 10, 'Math Practice', ln=True, align='C')
     pdf.ln(5)
     
-    pdf.set_font('Arial', '', 12)
-    pdf.cell(0, 8, f'题目数量: {len(problems)}', ln=True)
+    pdf.set_font("Arial", '', 12)
+    pdf.cell(0, 8, f'Problems: {len(problems)}', ln=True)
     pdf.ln(5)
     
     # 题目区域
-    pdf.set_font('Arial', 'B', 14)
+    pdf.set_font("Arial", 'B', 14)
     col_width = 90
     row_height = 10
     x_start = 10
@@ -125,7 +126,7 @@ def export_pdf():
             expr += f' {op} {p["numbers"][j+1]}'
         expr += ' ='
         
-        pdf.set_font('Arial', '', 12)
+        pdf.set_font("Arial", '', 12)
         pdf.cell(col_width, row_height, f'{i+1}. {expr}', border=0)
         
         if i % 2 == 1:
@@ -133,11 +134,11 @@ def export_pdf():
     
     # 答案区域
     pdf.ln(15)
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, '答案', ln=True)
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(0, 10, 'Answers', ln=True)
     pdf.ln(5)
     
-    pdf.set_font('Arial', '', 12)
+    pdf.set_font("Arial", '', 12)
     for i, p in enumerate(problems):
         if i % 4 == 0:
             if i > 0:
@@ -148,8 +149,8 @@ def export_pdf():
     
     # 答题区域
     pdf.ln(15)
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, '答题区', ln=True)
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(0, 10, 'Work Area', ln=True)
     pdf.ln(5)
     
     for i in range(len(problems)):
@@ -159,7 +160,11 @@ def export_pdf():
         if i % 2 == 1:
             pdf.ln()
     
-    response = make_response(pdf.output(dest='S').encode('latin-1'))
+    # 输出 PDF
+    pdf_data = pdf.output()
+    if isinstance(pdf_data, (bytearray, str)):
+        pdf_data = bytes(pdf_data)
+    response = make_response(pdf_data)
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = 'attachment; filename=math-practice.pdf'
     return response
