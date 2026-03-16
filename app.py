@@ -113,12 +113,14 @@ def export_pdf():
     pdf.cell(0, 10, f'Number of problems: {len(problems)}', ln=True)
     pdf.ln(10)
     
-    # 题目区域 - 简洁布局，每行一个
+    # 题目区域 - 两列布局
     x_start = 20
+    col_width = 85
     row_height = 16
     
     for i, p in enumerate(problems):
-        pdf.set_x(x_start)
+        if i % 2 == 0:
+            pdf.set_x(x_start)
         
         # 构建题目表达式
         expr = str(p['numbers'][0])
@@ -127,9 +129,10 @@ def export_pdf():
         expr += ' ='
         
         pdf.set_font("Helvetica", '', 14)
-        # 每行一个题目，带边框
-        pdf.cell(0, row_height, expr, border='LRTB', align='L', new_x='LMARGIN', new_y='NEXT')
-        pdf.ln(2)
+        pdf.cell(col_width, row_height, expr, border='LRTB', align='L', new_x='LMARGIN', new_y='NEXT')
+        
+        if i % 2 == 1:
+            pdf.ln(2)
     
     # ===== 第二页：答案和答题区 =====
     pdf.add_page()
@@ -149,16 +152,18 @@ def export_pdf():
         pdf.cell(50, 10, f'{i+1}. {p["answer"]}', border=0)
     pdf.ln(20)
     
-    # 答题区域
-    col_width = 170
+    # 答题区域 - 两列布局
+    col_width = 85
     pdf.set_font("Helvetica", 'B', 18)
     pdf.cell(0, 15, 'Work Area', ln=True, align='C')
     pdf.ln(10)
     
     for i in range(len(problems)):
-        pdf.set_x(x_start)
+        if i % 2 == 0:
+            pdf.set_x(x_start)
         pdf.cell(col_width, 25, '', border='LRTB', new_x='LMARGIN', new_y='NEXT')
-        pdf.ln(2)
+        if i % 2 == 1:
+            pdf.ln(2)
     
     # 输出 PDF
     pdf_data = pdf.output()
