@@ -150,16 +150,15 @@ def export_pdf():
     pdf.ln(20)
     
     # 答题区域
+    col_width = 170
     pdf.set_font("Helvetica", 'B', 18)
     pdf.cell(0, 15, 'Work Area', ln=True, align='C')
     pdf.ln(10)
     
     for i in range(len(problems)):
-        if i % 2 == 0:
-            pdf.set_x(x_start)
-        pdf.cell(col_width, 25, '', border='LRTB')
-        if i % 2 == 1:
-            pdf.ln()
+        pdf.set_x(x_start)
+        pdf.cell(col_width, 25, '', border='LRTB', new_x='LMARGIN', new_y='NEXT')
+        pdf.ln(2)
     
     # 输出 PDF
     pdf_data = pdf.output()
