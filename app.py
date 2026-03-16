@@ -15,13 +15,17 @@ def is_mobile(user_agent):
     ]
     return any(re.search(p, user_agent, re.I) for p in patterns)
 
-def generate_problem(max_num, allow_add, allow_sub, segments):
+def generate_problem(max_num, allow_add, allow_sub, allow_mul, allow_div, segments):
     """生成一道算术题"""
     operators = []
     if allow_add:
         operators.append('+')
     if allow_sub:
         operators.append('-')
+    if allow_mul:
+        operators.append('*')
+    if allow_div:
+        operators.append('/')
     
     if not operators:
         return None
@@ -34,7 +38,7 @@ def generate_problem(max_num, allow_add, allow_sub, segments):
     while attempts < 100:
         numbers = []
         ops = []
-        current = random.randint(1, max_num - 1)
+        current = random.randint(1, max_num)
         numbers.append(current)
         result = current
         valid = True
@@ -47,13 +51,35 @@ def generate_problem(max_num, allow_add, allow_sub, segments):
                 if result + next_num > max_num:
                     valid = False
                 result += next_num
-            else:
+            elif op == '-':
                 if result <= 1:
                     valid = False
                     next_num = 0
                 else:
                     next_num = random.randint(1, result)
                     result -= next_num
+            elif op == '*':
+                if result == 0:
+                    result = 0
+                    next_num = 0
+                else:
+                    next_num = random.randint(1, max(1, max_num // result))
+                    if result * next_num > max_num:
+                        valid = False
+                    result *= next_num
+            elif op == '/':
+                if result <= 1:
+                    valid = False
+                    next_num = 1
+                else:
+                    # 找result的因数
+                    divisors = [i for i in range(1, result + 1) if result % i == 0 and i <= max_num]
+                    if not divisors:
+                        valid = False
+                        next_num = 1
+                    else:
+                        next_num = random.choice(divisors)
+                        result = result // next_num
             
             if result < 0 or result > max_num:
                 valid = False
@@ -66,7 +92,7 @@ def generate_problem(max_num, allow_add, allow_sub, segments):
         attempts += 1
     
     if attempts >= 100:
-        return generate_problem(max_num, allow_add, allow_sub, segments)
+        return generate_problem(max_num, allow_add, allow_sub, allow_mul, allow_div, segments)
     
     return {'numbers': numbers, 'operators': ops, 'answer': result}
 
@@ -84,11 +110,13 @@ def generate():
     max_num = data.get('maxNum', 50)
     allow_add = data.get('allowAdd', True)
     allow_sub = data.get('allowSub', True)
+    allow_mul = data.get('allowMul', False)
+    allow_div = data.get('allowDiv', False)
     segments = data.get('segments', 3)
     
     problems = []
     for _ in range(count):
-        problem = generate_problem(max_num, allow_add, allow_sub, segments)
+        problem = generate_problem(max_num, allow_add, allow_sub, allow_mul, allow_div, segments)
         if problem:
             problems.append(problem)
     

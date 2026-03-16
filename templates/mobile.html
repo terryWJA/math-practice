@@ -57,15 +57,26 @@
                 <input type="range" id="maxNumber" min="10" max="100" value="50" class="w-full">
             </div>
             
-            <div class="flex gap-4">
-                <label class="flex-1 flex items-center justify-center gap-2 p-2 border-2 rounded-lg" id="addLabel">
-                    <input type="checkbox" id="allowAdd" checked class="hidden">
-                    <span class="text-gray-700">➕ 加法</span>
-                </label>
-                <label class="flex-1 flex items-center justify-center gap-2 p-2 border-2 rounded-lg" id="subLabel">
-                    <input type="checkbox" id="allowSub" checked class="hidden">
-                    <span class="text-gray-700">➖ 减法</span>
-                </label>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">运算类型</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <label id="addLabel" class="flex items-center justify-center gap-1 p-2 border-2 rounded-lg">
+                        <input type="checkbox" id="allowAdd" checked class="hidden">
+                        <span class="text-gray-700">➕ 加法</span>
+                    </label>
+                    <label id="subLabel" class="flex items-center justify-center gap-1 p-2 border-2 rounded-lg">
+                        <input type="checkbox" id="allowSub" checked class="hidden">
+                        <span class="text-gray-700">➖ 减法</span>
+                    </label>
+                    <label id="mulLabel" class="flex items-center justify-center gap-1 p-2 border-2 rounded-lg">
+                        <input type="checkbox" id="allowMul" class="hidden">
+                        <span class="text-gray-700">✖️ 乘法</span>
+                    </label>
+                    <label id="divLabel" class="flex items-center justify-center gap-1 p-2 border-2 rounded-lg">
+                        <input type="checkbox" id="allowDiv" class="hidden">
+                        <span class="text-gray-700">➗ 除法</span>
+                    </label>
+                </div>
             </div>
             
             <div class="grid grid-cols-3 gap-2">
@@ -127,7 +138,7 @@
         maxNumberSlider.oninput = () => document.getElementById('maxNumDisplay').textContent = maxNumberSlider.value;
 
         // 运算类型选择
-        ['add', 'sub'].forEach(op => {
+        ['add', 'sub', 'mul', 'div'].forEach(op => {
             const label = document.getElementById(op + 'Label');
             const checkbox = document.getElementById('allow' + op.charAt(0).toUpperCase() + op.slice(1));
             label.onclick = () => {
@@ -176,9 +187,11 @@
             const maxNum = parseInt(maxNumberSlider.value);
             const allowAdd = document.getElementById('allowAdd').checked;
             const allowSub = document.getElementById('allowSub').checked;
+            const allowMul = document.getElementById('allowMul').checked;
+            const allowDiv = document.getElementById('allowDiv').checked;
             const segments = complexity + 1;
 
-            if (!allowAdd && !allowSub) {
+            if (!allowAdd && !allowSub && !allowMul && !allowDiv) {
                 alert('请至少选择一种运算！');
                 return;
             }
@@ -186,7 +199,7 @@
             fetch('/generate', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({count, maxNum, allowAdd, allowSub, segments})
+                body: JSON.stringify({count, maxNum, allowAdd, allowSub, allowMul, allowDiv, segments})
             })
             .then(r => r.json())
             .then(data => {
