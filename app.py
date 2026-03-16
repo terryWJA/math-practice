@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
+from fpdf import FPDF
 import random
 import re
 
@@ -91,6 +92,77 @@ def generate():
             problems.append(problem)
     
     return jsonify({'problems': problems})
+
+@app.route('/export-pdf', methods=['POST'])
+def export_pdf():
+    """导出题目为 PDF"""
+    data = request.json
+    problems = data.get('problems', [])
+    
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('Arial', 'B', 16)
+    pdf.cell(0, 10, '加减法算术练习', ln=True, align='C')
+    pdf.ln(5)
+    
+    pdf.set_font('Arial', '', 12)
+    pdf.cell(0, 8, f'题目数量: {len(problems)}', ln=True)
+    pdf.ln(5)
+    
+    # 题目区域
+    pdf.set_font('Arial', 'B', 14)
+    col_width = 90
+    row_height = 10
+    x_start = 10
+    
+    for i, p in enumerate(problems):
+        if i % 2 == 0:
+            pdf.set_x(x_start)
+        
+        # 构建题目表达式
+        expr = str(p['numbers'][0])
+        for j, op in enumerate(p['operators']):
+            expr += f' {op} {p["numbers"][j+1]}'
+        expr += ' ='
+        
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(col_width, row_height, f'{i+1}. {expr}', border=0)
+        
+        if i % 2 == 1:
+            pdf.ln()
+    
+    # 答案区域
+    pdf.ln(15)
+    pdf.set_font('Arial', 'B', 14)
+    pdf.cell(0, 10, '答案', ln=True)
+    pdf.ln(5)
+    
+    pdf.set_font('Arial', '', 12)
+    for i, p in enumerate(problems):
+        if i % 4 == 0:
+            if i > 0:
+                pdf.ln()
+            pdf.set_x(x_start)
+        pdf.cell(40, 8, f'{i+1}. {p["answer"]}', border=0)
+    pdf.ln()
+    
+    # 答题区域
+    pdf.ln(15)
+    pdf.set_font('Arial', 'B', 14)
+    pdf.cell(0, 10, '答题区', ln=True)
+    pdf.ln(5)
+    
+    for i in range(len(problems)):
+        if i % 2 == 0:
+            pdf.set_x(x_start)
+        pdf.cell(col_width, 15, '', border=1)
+        if i % 2 == 1:
+            pdf.ln()
+    
+    response = make_response(pdf.output(dest='S').encode('latin-1'))
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=math-practice.pdf'
+    return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
