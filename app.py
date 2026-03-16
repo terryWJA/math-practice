@@ -113,14 +113,12 @@ def export_pdf():
     pdf.cell(0, 10, f'Number of problems: {len(problems)}', ln=True)
     pdf.ln(10)
     
-    # 题目区域
+    # 题目区域 - 简洁布局，每行一个
     x_start = 20
-    col_width = 85
-    row_height = 14
+    row_height = 16
     
     for i, p in enumerate(problems):
-        if i % 2 == 0:
-            pdf.set_x(x_start)
+        pdf.set_x(x_start)
         
         # 构建题目表达式
         expr = str(p['numbers'][0])
@@ -129,10 +127,9 @@ def export_pdf():
         expr += ' ='
         
         pdf.set_font("Helvetica", '', 14)
-        pdf.cell(col_width, row_height, f'{i+1}. {expr}', border='LRTB', align='C')
-        
-        if i % 2 == 1:
-            pdf.ln()
+        # 每行一个题目，带边框
+        pdf.cell(0, row_height, expr, border='LRTB', align='L', new_x='LMARGIN', new_y='NEXT')
+        pdf.ln(2)
     
     # ===== 第二页：答案和答题区 =====
     pdf.add_page()
