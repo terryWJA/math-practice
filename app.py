@@ -152,19 +152,6 @@ def export_pdf():
         pdf.cell(50, 10, f'{i+1}. {p["answer"]}', border=0)
     pdf.ln(20)
     
-    # 答题区域 - 两列布局
-    col_width = 85
-    pdf.set_font("Helvetica", 'B', 18)
-    pdf.cell(0, 15, 'Work Area', ln=True, align='C')
-    pdf.ln(10)
-    
-    for i in range(len(problems)):
-        if i % 2 == 0:
-            pdf.set_x(x_start)
-        pdf.cell(col_width, 25, '', border='LRTB')
-        if i % 2 == 1:
-            pdf.ln()
-    
     # 输出 PDF
     pdf_data = pdf.output()
     if isinstance(pdf_data, (bytearray, str)):
