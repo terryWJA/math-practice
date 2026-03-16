@@ -101,20 +101,22 @@ def export_pdf():
     problems = data.get('problems', [])
     
     pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    
+    # ===== 第一页：题目 =====
     pdf.add_page()
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(0, 10, 'Math Practice', ln=True, align='C')
+    pdf.set_font("Helvetica", 'B', 20)
+    pdf.cell(0, 15, '加减法算术练习', ln=True, align='C')
     pdf.ln(5)
     
-    pdf.set_font("Arial", '', 12)
-    pdf.cell(0, 8, f'Problems: {len(problems)}', ln=True)
-    pdf.ln(5)
+    pdf.set_font("Helvetica", '', 12)
+    pdf.cell(0, 10, f'题目数量: {len(problems)} 道', ln=True)
+    pdf.ln(10)
     
-    # 题目区域
-    pdf.set_font("Arial", 'B', 14)
-    col_width = 90
-    row_height = 10
-    x_start = 10
+    # 题目区域 - 更大更宽松的排版
+    x_start = 20
+    col_width = 85
+    row_height = 14
     
     for i, p in enumerate(problems):
         if i % 2 == 0:
@@ -126,37 +128,39 @@ def export_pdf():
             expr += f' {op} {p["numbers"][j+1]}'
         expr += ' ='
         
-        pdf.set_font("Arial", '', 12)
-        pdf.cell(col_width, row_height, f'{i+1}. {expr}', border=0)
+        pdf.set_font("Helvetica", '', 14)
+        pdf.cell(col_width, row_height, f'{i+1}. {expr}', border='LRT', align='C')
         
         if i % 2 == 1:
             pdf.ln()
     
-    # 答案区域
-    pdf.ln(15)
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, 'Answers', ln=True)
-    pdf.ln(5)
+    # ===== 第二页：答案和答题区 =====
+    pdf.add_page()
+    pdf.set_font("Helvetica", 'B', 18)
+    pdf.cell(0, 15, '答案', ln=True, align='C')
+    pdf.ln(10)
     
-    pdf.set_font("Arial", '', 12)
+    # 答案区域 - 宽松排版
+    x_start = 25
+    pdf.set_font("Helvetica", '', 12)
+    
     for i, p in enumerate(problems):
-        if i % 4 == 0:
+        if i % 3 == 0:
             if i > 0:
                 pdf.ln()
             pdf.set_x(x_start)
-        pdf.cell(40, 8, f'{i+1}. {p["answer"]}', border=0)
-    pdf.ln()
+        pdf.cell(50, 10, f'{i+1}. {p["answer"]}', border=0)
+    pdf.ln(20)
     
     # 答题区域
-    pdf.ln(15)
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, 'Work Area', ln=True)
-    pdf.ln(5)
+    pdf.set_font("Helvetica", 'B', 18)
+    pdf.cell(0, 15, '答题区', ln=True, align='C')
+    pdf.ln(10)
     
     for i in range(len(problems)):
         if i % 2 == 0:
             pdf.set_x(x_start)
-        pdf.cell(col_width, 15, '', border=1)
+        pdf.cell(col_width, 25, '', border='LRTB')
         if i % 2 == 1:
             pdf.ln()
     
