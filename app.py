@@ -129,10 +129,10 @@ def export_pdf():
         expr += ' ='
         
         pdf.set_font("Helvetica", '', 14)
-        pdf.cell(col_width, row_height, expr, border='LRTB', align='L', new_x='LMARGIN', new_y='NEXT')
+        pdf.cell(col_width, row_height, expr, border='LRTB', align='L')
         
         if i % 2 == 1:
-            pdf.ln(2)
+            pdf.ln()
     
     # ===== 第二页：答案和答题区 =====
     pdf.add_page()
@@ -161,9 +161,9 @@ def export_pdf():
     for i in range(len(problems)):
         if i % 2 == 0:
             pdf.set_x(x_start)
-        pdf.cell(col_width, 25, '', border='LRTB', new_x='LMARGIN', new_y='NEXT')
+        pdf.cell(col_width, 25, '', border='LRTB')
         if i % 2 == 1:
-            pdf.ln(2)
+            pdf.ln()
     
     # 输出 PDF
     pdf_data = pdf.output()
