@@ -1,0 +1,505 @@
+[I[O<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加减法算术练习生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .problem-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideIn 0.5s ease-out;
+        }
+        .problem-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .answer-input {
+            transition: all 0.3s ease;
+        }
+        .answer-input:focus {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+        .correct-anim {
+            animation: correctPulse 0.6s ease;
+            background-color: #86efac !important;
+            border-color: #22c55e !important;
+        }
+        .wrong-anim {
+            animation: shake 0.5s ease;
+            background-color: #fca5a5 !important;
+            border-color: #ef4444 !important;
+        }
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e5e7eb;
+            outline: none;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+        .checkbox-wrapper input:checked + div {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+        .checkbox-wrapper input:checked + div svg {
+            display: block;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- 标题区域 -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-2">
+                <span class="gradient-text">加减法算术练习</span>
+            </h1>
+            <p class="text-white/80 text-lg">50以内 · 连加连减 · 智能生成</p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- 控制面板 -->
+            <div class="glass-panel rounded-2xl p-6 shadow-2xl lg:col-span-1 h-fit">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                    </svg>
+                    练习设置
+                </h2>
+
+                <!-- 题目数量 -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        题目数量: <span id="countDisplay" class="text-indigo-600 font-bold">10</span> 道
+                    </label>
+                    <input type="range" id="problemCount" min="5" max="30" value="10" class="range-slider">
+                </div>
+
+                <!-- 数字范围 -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        最大数字: <span id="maxNumDisplay" class="text-indigo-600 font-bold">50</span>
+                    </label>
+                    <input type="range" id="maxNumber" min="10" max="100" value="50" class="range-slider">
+                </div>
+
+                <!-- 运算类型 -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">运算类型</label>
+                    <div class="space-y-2">
+                        <label class="checkbox-wrapper flex items-center cursor-pointer group">
+                            <input type="checkbox" id="allowAdd" checked class="hidden">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded mr-3 flex items-center justify-center transition-all group-hover:border-indigo-400">
+                                <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700 group-hover:text-indigo-600 transition-colors">加法 (+)</span>
+                        </label>
+                        <label class="checkbox-wrapper flex items-center cursor-pointer group">
+                            <input type="checkbox" id="allowSub" checked class="hidden">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded mr-3 flex items-center justify-center transition-all group-hover:border-indigo-400">
+                                <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700 group-hover:text-indigo-600 transition-colors">减法 (-)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 连加连减设置 -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">题目复杂度</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="complexity-btn px-3 py-2 rounded-lg border-2 border-indigo-100 text-sm font-medium transition-all hover:border-indigo-300 bg-white text-gray-700" data-complexity="1">
+                            简单<br><span class="text-xs text-gray-500">2个数</span>
+                        </button>
+                        <button class="complexity-btn px-3 py-2 rounded-lg border-2 border-indigo-500 text-sm font-medium transition-all bg-indigo-50 text-indigo-700" data-complexity="2">
+                            中等<br><span class="text-xs text-indigo-500">3个数</span>
+                        </button>
+                        <button class="complexity-btn px-3 py-2 rounded-lg border-2 border-indigo-100 text-sm font-medium transition-all hover:border-indigo-300 bg-white text-gray-700" data-complexity="3">
+                            困难<br><span class="text-xs text-gray-500">4个数</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 生成按钮 -->
+                <button id="generateBtn" class="btn-primary w-full py-3 rounded-xl text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    生成新题目
+                </button>
+
+                <!-- 统计信息 -->
+                <div id="statsPanel" class="mt-6 p-4 rounded-xl stats-card border border-gray-200 hidden">
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <div class="text-2xl font-bold text-green-600" id="correctCount">0</div>
+                            <div class="text-xs text-gray-600">正确</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-red-500" id="wrongCount">0</div>
+                            <div class="text-xs text-gray-600">错误</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-gray-200 text-center">
+                        <div class="text-sm text-gray-600">正确率</div>
+                        <div class="text-xl font-bold text-indigo-600" id="accuracy">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 题目区域 -->
+            <div class="lg:col-span-2">
+                <div class="glass-panel rounded-2xl p-6 shadow-2xl min-h-[600px]">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            答题区
+                        </h2>
+                        <button id="checkAllBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            检查答案
+                        </button>
+                    </div>
+
+                    <div id="problemsContainer" class="grid md:grid-cols-2 gap-4">
+                        <div class="col-span-full text-center py-20 text-gray-400">
+                            <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-lg">点击"生成新题目"开始练习</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 状态管理
+        let currentProblems = [];
+        let complexity = 2; // 默认3个数
+        let stats = { correct: 0, wrong: 0 };
+
+        // DOM 元素
+        const problemCountSlider = document.getElementById('problemCount');
+        const maxNumberSlider = document.getElementById('maxNumber');
+        const countDisplay = document.getElementById('countDisplay');
+        const maxNumDisplay = document.getElementById('maxNumDisplay');
+        const generateBtn = document.getElementById('generateBtn');
+        const problemsContainer = document.getElementById('problemsContainer');
+        const checkAllBtn = document.getElementById('checkAllBtn');
+        const statsPanel = document.getElementById('statsPanel');
+        const complexityBtns = document.querySelectorAll('.complexity-btn');
+
+        // 滑块事件
+        problemCountSlider.addEventListener('input', (e) => {
+            countDisplay.textContent = e.target.value;
+        });
+
+        maxNumberSlider.addEventListener('input', (e) => {
+            maxNumDisplay.textContent = e.target.value;
+        });
+
+        // 复杂度选择
+        complexityBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                complexityBtns.forEach(b => {
+                    b.classList.remove('border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+                    b.classList.add('border-indigo-100', 'bg-white', 'text-gray-700');
+                    b.querySelector('span').classList.remove('text-indigo-500');
+                    b.querySelector('span').classList.add('text-gray-500');
+                });
+                btn.classList.remove('border-indigo-100', 'bg-white', 'text-gray-700');
+                btn.classList.add('border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+                btn.querySelector('span').classList.remove('text-gray-500');
+                btn.querySelector('span').classList.add('text-indigo-500');
+                complexity = parseInt(btn.dataset.complexity);
+            });
+        });
+
+        // 生成题目
+        function generateProblem(maxNum, allowAdd, allowSub, segments) {
+            const operators = [];
+            if (allowAdd) operators.push('+');
+            if (allowSub) operators.push('-');
+            
+            if (operators.length === 0) return null;
+
+            let numbers = [];
+            let ops = [];
+            let result = 0;
+            let attempts = 0;
+            
+            // 尝试生成有效题目
+            do {
+                numbers = [];
+                ops = [];
+                let current = Math.floor(Math.random() * (maxNum - 1)) + 1;
+                numbers.push(current);
+                result = current;
+                let valid = true;
+                
+                for (let i = 0; i < segments - 1; i++) {
+                    const op = operators[Math.floor(Math.random() * operators.length)];
+                    let nextNum;
+                    
+                    if (op === '+') {
+                        nextNum = Math.floor(Math.random() * (maxNum - result)) + 1;
+                        if (result + nextNum > maxNum) valid = false;
+                        result += nextNum;
+                    } else {
+                        nextNum = Math.floor(Math.random() * result) + 1;
+                        result -= nextNum;
+                    }
+                    
+                    if (result < 0 || result > maxNum) valid = false;
+                    
+                    ops.push(op);
+                    numbers.push(nextNum);
+                }
+                
+                if (valid && result >= 0 && result <= maxNum) break;
+                attempts++;
+            } while (attempts < 100);
+            
+            if (attempts >= 100) return generateProblem(maxNum, allowAdd, allowSub, segments); // 递归重试
+            
+            return { numbers, operators: ops, answer: result };
+        }
+
+        // 渲染题目
+        function renderProblems() {
+            const count = parseInt(problemCountSlider.value);
+            const maxNum = parseInt(maxNumberSlider.value);
+            const allowAdd = document.getElementById('allowAdd').checked;
+            const allowSub = document.getElementById('allowSub').checked;
+            const segments = complexity + 1; // complexity 1=2个数, 2=3个数, 3=4个数
+
+            if (!allowAdd && !allowSub) {
+                alert('请至少选择一种运算类型！');
+                return;
+            }
+
+            currentProblems = [];
+            problemsContainer.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const problem = generateProblem(maxNum, allowAdd, allowSub, segments);
+                if (problem) {
+                    problem.id = i;
+                    problem.userAnswer = null;
+                    problem.checked = false;
+                    currentProblems.push(problem);
+                    
+                    const card = createProblemCard(problem, i);
+                    problemsContainer.appendChild(card);
+                }
+            }
+            
+            checkAllBtn.disabled = false;
+            stats = { correct: 0, wrong: 0 };
+            updateStats();
+            statsPanel.classList.remove('hidden');
+        }
+
+        // 创建题目卡片
+        function createProblemCard(problem, index) {
+            const div = document.createElement('div');
+            div.className = 'problem-card bg-white rounded-xl p-4 border-2 border-gray-100 shadow-sm';
+            div.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded">#${index + 1}</span>
+                    <span class="status-icon hidden">
+                        <svg class="w-5 h-5 correct-icon text-green-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <svg class="w-5 h-5 wrong-icon text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </span>
+                </div>
+                <div class="flex items-center justify-center gap-2 text-lg md:text-xl font-bold text-gray-800 mb-3 flex-wrap">
+                    ${renderExpression(problem)}
+                    <span>=</span>
+                    <input type="number" 
+                           class="answer-input w-16 md:w-20 px-2 py-1 border-2 border-gray-300 rounded-lg text-center font-bold text-indigo-600 focus:outline-none focus:border-indigo-500" 
+                           data-index="${index}"
+                           placeholder="?">
+                </div>
+                <div class="text-center">
+                    <button class="check-single-btn px-4 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition-colors" data-index="${index}">
+                        检查
+                    </button>
+                </div>
+            `;
+            
+            // 单个检查按钮事件
+            div.querySelector('.check-single-btn').addEventListener('click', () => checkSingle(index));
+            
+            // 输入框回车事件
+            const input = div.querySelector('input');
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkSingle(index);
+            });
+            
+            return div;
+        }
+
+        // 渲染表达式
+        function renderExpression(problem) {
+            let html = `<span>${problem.numbers[0]}</span>`;
+            for (let i = 0; i < problem.operators.length; i++) {
+                const color = problem.operators[i] === '+' ? 'text-green-600' : 'text-red-500';
+                html += `<span class="${color} mx-1">${problem.operators[i]}</span>`;
+                html += `<span>${problem.numbers[i + 1]}</span>`;
+            }
+            return html;
+        }
+
+        // 检查单个答案
+        function checkSingle(index) {
+            const problem = currentProblems[index];
+            const input = document.querySelector(`input[data-index="${index}"]`);
+            const card = input.closest('.problem-card');
+            const value = parseInt(input.value);
+            
+            if (isNaN(value)) {
+                input.focus();
+                return;
+            }
+            
+            problem.userAnswer = value;
+            problem.checked = true;
+            
+            const isCorrect = value === problem.answer;
+            const statusIcon = card.querySelector('.status-icon');
+            const correctIcon = card.querySelector('.correct-icon');
+            const wrongIcon = card.querySelector('.wrong-icon');
+            const checkBtn = card.querySelector('.check-single-btn');
+            
+            statusIcon.classList.remove('hidden');
+            input.disabled = true;
+            checkBtn.disabled = true;
+            checkBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            if (isCorrect) {
+                input.classList.add('correct-anim');
+                correctIcon.classList.remove('hidden');
+                wrongIcon.classList.add('hidden');
+                checkBtn.textContent = '正确';
+                checkBtn.classList.remove('bg-indigo-100', 'text-indigo-700');
+                checkBtn.classList.add('bg-green-100', 'text-green-700');
+                stats.correct++;
+            } else {
+                input.classList.add('wrong-anim');
+                correctIcon.classList.add('hidden');
+                wrongIcon.classList.remove('hidden');
+                checkBtn.textContent = `答案: ${problem.answer}`;
+                checkBtn.classList.remove('bg-indigo-100', 'text-indigo-700');
+                checkBtn.classList.add('bg-red-100', 'text-red-700');
+                stats.wrong++;
+            }
+            
+            updateStats();
+        }
+
+        // 检查所有答案
+        function checkAll() {
+            currentProblems.forEach((problem, index) => {
+                if (!problem.checked) {
+                    checkSingle(index);
+                }
+            });
+        }
+
+        // 更新统计
+        function updateStats() {
+            document.getElementById('correctCount').textContent = stats.correct;
+            document.getElementById('wrongCount').textContent = stats.wrong;
+            const total = stats.correct + stats.wrong;
+            const accuracy = total > 0 ? Math.round((stats.correct / total) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        // 事件监听
+        generateBtn.addEventListener('click', renderProblems);
+        checkAllBtn.addEventListener('click', checkAll);
+
+        // 初始化
+        renderProblems();
+    </script>
+</body>
+</html>
