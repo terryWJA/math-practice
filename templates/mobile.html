@@ -102,7 +102,10 @@
     <div class="glass-panel rounded-2xl p-4 shadow-lg">
         <div class="flex justify-between items-center mb-3">
             <h2 class="font-bold text-gray-800">答题区</h2>
-            <button id="checkAllBtn" class="px-4 py-1.5 bg-green-500 text-white rounded-lg text-sm font-medium" disabled>检查</button>
+            <div class="flex gap-2">
+                <button id="checkAllBtn" class="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm font-medium" disabled>检查</button>
+                <button id="exportPdfBtn" class="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium" disabled>导出</button>
+            </div>
         </div>
         
         <div id="problemsContainer" class="space-y-3">
@@ -149,6 +152,24 @@
 
         document.getElementById('generateBtn').onclick = renderProblems;
         document.getElementById('checkAllBtn').onclick = checkAll;
+        
+        document.getElementById('exportPdfBtn').onclick = () => {
+            if (currentProblems.length === 0) return;
+            fetch('/export-pdf', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({problems: currentProblems})
+            })
+            .then(r => r.blob())
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'math-practice.pdf';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        };
 
         function renderProblems() {
             const count = parseInt(problemCountSlider.value);
@@ -180,6 +201,7 @@
                 });
                 
                 document.getElementById('checkAllBtn').disabled = false;
+                document.getElementById('exportPdfBtn').disabled = false;
                 stats = { correct: 0, wrong: 0 };
                 updateStats();
                 document.getElementById('statsPanel').classList.remove('hidden');
